@@ -43,7 +43,8 @@ class ConfigurationManager
             "setup-mode",
             "minigame-name",
             "required-players",
-            "round-time"
+            "round-time",
+            "post-game-wait-time"
         ];
 
         foreach ($requiredKeys as $key) {
@@ -63,6 +64,12 @@ class ConfigurationManager
         if (!is_numeric($roundTime) || $roundTime < 1) {
             $this->plugin->getLogger()->warning("Invalid round-time value. Using default: 5");
             $this->config->set("round-time", 5);
+        }
+
+        $postGameWaitTime = $this->config->get("post-game-wait-time", 30);
+        if (!is_numeric($postGameWaitTime) || $postGameWaitTime < 5) {
+            $this->plugin->getLogger()->warning("Invalid post-game-wait-time value. Using default: 30");
+            $this->config->set("post-game-wait-time", 30);
         }
     }
 
@@ -108,12 +115,22 @@ class ConfigurationManager
 
     /**
      * Get round time in minutes
-     * 
+     *
      * @return int
      */
     public function getRoundTime(): int
     {
         return (int) $this->config->get("round-time", 5);
+    }
+
+    /**
+     * Get post-game wait time in seconds
+     *
+     * @return int
+     */
+    public function getPostGameWaitTime(): int
+    {
+        return (int) $this->config->get("post-game-wait-time", 30);
     }
 
     /**

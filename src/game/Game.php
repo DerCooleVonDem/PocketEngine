@@ -7,6 +7,7 @@ use JonasWindmann\CoreAPI\scoreboard\ScoreboardTag;
 use JonasWindmann\CoreAPI\utils\WorldUtils;
 use JonasWindmann\PocketEngine\components\PocketEngineComponent;
 use JonasWindmann\PocketEngine\game\task\GameUpdateTask;
+use JonasWindmann\PocketEngine\game\task\PostGameCountdownTask;
 use JonasWindmann\PocketEngine\game\task\StartGameCountdownTask;
 use JonasWindmann\PocketEngine\Main;
 use pocketmine\math\Vector3;
@@ -28,8 +29,10 @@ class Game
 
     public int $gameStartTime = 0;
     public int $maxGameTimeMinutes = 1;
+    public int $postGameWaitTime = 30;
 
     public TaskHandler $updateHandler;
+    public ?TaskHandler $postGameHandler = null;
 
     public bool $roundWasWon = false;
     public ?Player $winner = null;
@@ -39,11 +42,12 @@ class Game
 
 
 
-    public function __construct(int $requiredPlayers, int $maxGameTimeMinutes)
+    public function __construct(int $requiredPlayers, int $maxGameTimeMinutes, int $postGameWaitTime = 30)
     {
         self::setInstance($this);
         $this->requiredPlayers = $requiredPlayers;
         $this->maxGameTimeMinutes = $maxGameTimeMinutes;
+        $this->postGameWaitTime = $postGameWaitTime;
     }
 
     public function registerGameService(GameService $gameService): bool {
@@ -200,6 +204,20 @@ class Game
                 CoreAPI::getInstance()->getScoreboardManager()->displayScoreboard($player, "victory");
             }
         }
+
+        // Start post-game countdown
+        $this->startPostGameCountdown();
+    }
+
+    /**
+     * Start the post-game countdown timer
+     */
+    private function startPostGameCountdown(): void
+    {
+        $task = new PostGameCountdownTask($this->postGameWaitTime);
+        $this->postGameHandler = Main::getInstance()->getScheduler()->scheduleRepeatingTask($task, 20);
+
+        Main::getInstance()->getLogger()->info("Post-game countdown started. Server will reset in {$this->postGameWaitTime} seconds.");
     }
 
     public function selectSpawnPoint(Player $player): ?Vector3 {
@@ -283,5 +301,32 @@ class Game
     public function getGameState()
     {
         return $this->gameState;
+    }
+
+    /**
+     * Reset the game to initial waiting state
+     */
+    public function reset(): void
+    {
+        // Cancel any running tasks
+        if (isset($this->updateHandler)) {
+            $this->updateHandler->cancel();
+        }
+        if ($this->postGameHandler !== null) {
+            $this->postGameHandler->cancel();
+            $this->postGameHandler = null;
+        }
+
+        // Reset game properties
+        $this->gameState = GameState::WAITING;
+        $this->players = [];
+        $this->playersJoined = 0;
+        $this->gameStartTime = 0;
+        $this->roundWasWon = false;
+        $this->winner = null;
+        $this->spawnLocations = [];
+        $this->unclaimedSpawnLocations = [];
+
+        Main::getInstance()->getLogger()->info("Game reset to waiting state.");
     }
 }

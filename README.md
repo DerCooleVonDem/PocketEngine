@@ -9,6 +9,7 @@
 - **Player Management**: Seamless player joining, leaving, and session tracking
 - **Round-based Gameplay**: Configurable round timers and player requirements
 - **Winner Detection**: Built-in winner detection and game ending logic
+- **Post-Game Reset**: Automatic server reset with configurable countdown and player notifications
 
 ### World Management
 - **Automatic World Setup**: Creates and manages required worlds (lobby, game, victory)
@@ -36,7 +37,7 @@
 ## 📋 Requirements
 
 - **PocketMine-MP**: 5.28.0 or higher
-- **CoreAPI**: Latest version (dependency)
+- **CoreAPI**: Latest version (dependency) [https://github.com/DerCooleVonDem/CoreAPI]
 - **PHP**: 8.1 or higher
 
 ## 🛠️ Installation
@@ -57,6 +58,7 @@ setup-mode: true                     # Enable setup mode for development
 minigame-name: "Minigame"           # Display name for your minigame
 required-players: 2                  # Minimum players to start a game
 round-time: 5                       # Round duration in minutes
+post-game-wait-time: 30             # Post-game countdown time in seconds
 ```
 
 ### Important Configuration Notes
@@ -65,6 +67,7 @@ round-time: 5                       # Round duration in minutes
 - **`setup-mode`**: Enables development features and additional logging
 - **`required-players`**: Minimum number of players needed to start a game
 - **`round-time`**: Maximum duration for each game round in minutes
+- **`post-game-wait-time`**: Time in seconds to wait after a round ends before resetting the server (minimum: 5 seconds)
 
 ## 🎮 Commands
 
@@ -212,7 +215,34 @@ PocketEngine follows a clean architecture pattern with several key components:
 4. **Starting State**: Countdown begins when enough players join
 5. **Playing State**: Game is active, players are teleported to spawn points
 6. **Ending State**: Game ends either by time limit or win condition
-7. **Reset**: Game returns to waiting state for next round
+7. **Post-Game Countdown**: Configurable wait time with player notifications
+8. **Reset**: All players kicked, game returns to waiting state for next round
+
+## 🎯 Post-Game Reset System
+
+PocketEngine features an advanced post-game reset system that provides a smooth transition between rounds:
+
+### Features
+- **⏱️ Configurable Countdown**: Set custom wait time after rounds end (default: 30 seconds)
+- **📊 Live Scoreboard Updates**: Victory scoreboard shows countdown timer in real-time
+- **⚠️ Warning System**: Title notifications at 30, 20, 10, 5, 4, 3, 2, 1 seconds before reset
+- **👥 Automatic Player Management**: All remaining players are kicked with friendly messages
+- **🔄 Clean Reset**: Server returns to pristine waiting state, ready for new players
+
+### How It Works
+1. **Round Ends** - Players see victory/defeat titles and are moved to victory world
+2. **Countdown Begins** - Victory scoreboard displays "Reset in: Xs" countdown
+3. **Warnings Displayed** - Players receive title warnings at specified intervals
+4. **Players Kicked** - Friendly kick message: "Round Over! The server is resetting for the next round. Rejoin to play again!"
+5. **Server Reset** - Game state, player lists, and all variables reset to initial values
+6. **Ready for Next Round** - New players can join immediately
+
+### Configuration
+```yaml
+post-game-wait-time: 30  # Time in seconds (minimum: 5)
+```
+
+This system ensures players understand what's happening and when they can rejoin, creating a professional minigame experience.
 
 ## 🐛 Development & Debugging
 

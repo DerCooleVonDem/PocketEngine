@@ -70,7 +70,8 @@ class Main extends PluginBase{
         // Initialize game
         $requiredPlayers = $this->configurationManager->getRequiredPlayers();
         $roundTime = $this->configurationManager->getRoundTime();
-        $this->game = new Game($requiredPlayers, $roundTime);
+        $postGameWaitTime = $this->configurationManager->getPostGameWaitTime();
+        $this->game = new Game($requiredPlayers, $roundTime, $postGameWaitTime);
 
         // Register event listeners
         $this->getServer()->getPluginManager()->registerEvents(new GameListener(), $this);

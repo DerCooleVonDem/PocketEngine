@@ -4,3 +4,4 @@ setup-mode: true
 minigame-name: "Minigame"
 required-players: 2
 round-time: 5
+post-game-wait-time: 30
