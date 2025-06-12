@@ -228,6 +228,7 @@ PocketEngine features an advanced post-game reset system that provides a smooth 
 - **⚠️ Warning System**: Title notifications at 30, 20, 10, 5, 4, 3, 2, 1 seconds before reset
 - **👥 Automatic Player Management**: All remaining players are kicked with friendly messages
 - **🔄 Clean Reset**: Server returns to pristine waiting state, ready for new players
+- **🚪 Auto-Reset on Empty**: Server automatically resets when all players leave during any game state
 
 ### How It Works
 1. **Round Ends** - Players see victory/defeat titles and are moved to victory world
@@ -236,6 +237,13 @@ PocketEngine features an advanced post-game reset system that provides a smooth 
 4. **Players Kicked** - Friendly kick message: "Round Over! The server is resetting for the next round. Rejoin to play again!"
 5. **Server Reset** - Game state, player lists, and all variables reset to initial values
 6. **Ready for Next Round** - New players can join immediately
+
+### Auto-Reset on Empty Server
+- **During Game**: If all players leave while the game is running, the round ends properly (like when time runs out) and proceeds to post-game
+- **During Post-Game**: If all players leave during the countdown, the server skips the remaining countdown and resets immediately
+- **Proper Flow**: Maintains the correct game state transitions even when players leave
+- **Smart Detection**: Monitors player count in real-time and triggers appropriate actions
+- **Clean State**: Ensures the server never gets stuck in a playing/ended state with no players
 
 ### Configuration
 ```yaml

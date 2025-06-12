@@ -32,7 +32,15 @@ class PostGameCountdownTask extends Task
         try {
             $game = Game::getInstance();
             if (!$game || $game->getGameState() !== GameState::ENDED) {
-                $this->getHandler()->cancel();
+                $this->getHandler()?->cancel();
+                return;
+            }
+
+            // Check if all players have left during post-game countdown
+            if ($game->playersJoined <= 0) {
+                Main::getInstance()->getLogger()->info("All players left during post-game countdown. Resetting immediately.");
+                $this->resetServer();
+                $this->getHandler()?->cancel();
                 return;
             }
 
@@ -47,14 +55,14 @@ class PostGameCountdownTask extends Task
             // Check if countdown is finished
             if ($this->secondsLeft <= 0) {
                 $this->resetServer();
-                $this->getHandler()->cancel();
+                $this->getHandler()?->cancel();
                 return;
             }
 
             $this->secondsLeft--;
         } catch (\Exception $e) {
             Main::getInstance()->getLogger()->error("Error in PostGameCountdownTask: " . $e->getMessage());
-            $this->getHandler()->cancel();
+            $this->getHandler()?->cancel();
         }
     }
 

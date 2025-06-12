@@ -93,6 +93,9 @@ class Game
         }
 
         unset($this->players[$player->getUniqueId()->toString()]);
+
+        // Check if all players have left and reset if necessary
+        $this->checkForReset();
     }
 
     public function isSetupMode(): bool {
@@ -103,6 +106,19 @@ class Game
     {
         if($this->playersJoined >= $this->requiredPlayers) {
             Main::getInstance()->getScheduler()->scheduleRepeatingTask(new StartGameCountdownTask(), 20);
+        }
+    }
+
+    /**
+     * Check if all players have left and reset the game if necessary
+     */
+    private function checkForReset(): void
+    {
+        // Only reset if we're in ENDED state and no players are left
+        // PLAYING state is handled in update() method by calling end() first
+        if ($this->gameState === GameState::ENDED && $this->playersJoined <= 0) {
+            Main::getInstance()->getLogger()->info("All players left during post-game. Resetting server to waiting state.");
+            $this->reset();
         }
     }
 
@@ -140,6 +156,13 @@ class Game
     // called every tick (20 ticks = 1 second)
     public function update()
     {
+        // Check if all players have left during the game - end the round properly
+        if ($this->gameState === GameState::PLAYING && $this->playersJoined <= 0) {
+            Main::getInstance()->getLogger()->info("All players left during the game. Ending round.");
+            $this->end();
+            return;
+        }
+
         $scoreboard = CoreAPI::getInstance()->getScoreboardManager()->getScoreboard("playing");
         if($scoreboard) {
             // Time left (Format: Minutes:Seconds
@@ -188,24 +211,27 @@ class Game
             }, "Round finish reason"));
         }
 
-        $victoryWorld = WorldUtils::getWorldByName("victory");
-        foreach($this->players as $player) {
-            if($victoryWorld && $player instanceof Player) {
-                $player->getInventory()->clearAll();
-                $player->teleport($victoryWorld->getSpawnLocation());
-                $player->sendMessage("§aThe round has ended!");
+        // Only handle victory world and scoreboards if there are players left
+        if ($this->playersJoined > 0) {
+            $victoryWorld = WorldUtils::getWorldByName("victory");
+            foreach($this->players as $player) {
+                if($victoryWorld && $player instanceof Player) {
+                    $player->getInventory()->clearAll();
+                    $player->teleport($victoryWorld->getSpawnLocation());
+                    $player->sendMessage("§aThe round has ended!");
 
-                if($this->roundWasWon && $this->winner && $player->getName() === $this->winner->getName()) {
-                    $player->sendTitle("§aYou won!");
-                } else {
-                    $player->sendTitle("§cYou lost!");
+                    if($this->roundWasWon && $this->winner && $player->getName() === $this->winner->getName()) {
+                        $player->sendTitle("§aYou won!");
+                    } else {
+                        $player->sendTitle("§cYou lost!");
+                    }
+
+                    CoreAPI::getInstance()->getScoreboardManager()->displayScoreboard($player, "victory");
                 }
-
-                CoreAPI::getInstance()->getScoreboardManager()->displayScoreboard($player, "victory");
             }
         }
 
-        // Start post-game countdown
+        // Start post-game countdown (will immediately reset if no players)
         $this->startPostGameCountdown();
     }
 

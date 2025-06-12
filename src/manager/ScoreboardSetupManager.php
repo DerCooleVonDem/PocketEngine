@@ -112,7 +112,8 @@ class ScoreboardSetupManager
             3 => "                      ",
             4 => "{round_finish_text}",
             5 => "{round_finish_reason}",
-            6 => "                       "
+            6 => "{reset_countdown}",
+            7 => "                       "
         ]);
 
         CoreAPI::getInstance()->getScoreboardManager()->registerScoreboard($scoreboard);

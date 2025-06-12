@@ -8,6 +8,7 @@ use JonasWindmann\PocketEngine\components\PocketEngineComponent;
 use JonasWindmann\PocketEngine\game\Game;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\world\Position;
 
@@ -28,5 +29,12 @@ class GameListener implements Listener
         if($world === null) return;
         $spawnPoint = $pocketengineComponent->getSpawnPoint();
         $event->setRespawnPosition(new Position($spawnPoint->x, $spawnPoint->y, $spawnPoint->z, $world));
+    }
+
+    public function onPlayerQuit(PlayerQuitEvent $event) {
+        $game = Game::getInstance();
+        if ($game) {
+            $game->leave($event->getPlayer());
+        }
     }
 }
