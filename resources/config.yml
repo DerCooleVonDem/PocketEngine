@@ -1,0 +1,6 @@
+# PocketEngine configuration file v1
+enable-auto-world-management: false
+setup-mode: true
+minigame-name: "Minigame"
+required-players: 2
+round-time: 5

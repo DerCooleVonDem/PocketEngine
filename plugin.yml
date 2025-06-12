@@ -1,0 +1,14 @@
+---
+name: PocketEngine
+version: 0.0.1
+main: JonasWindmann\PocketEngine\Main
+api: 5.28.0
+src-namespace-prefix: JonasWindmann\PocketEngine
+depend:
+  - CoreAPI
+permissions:
+  pocketengine.use:
+    default: op
+  pocketengine.spawnpoint.use:
+    default: op
+...
