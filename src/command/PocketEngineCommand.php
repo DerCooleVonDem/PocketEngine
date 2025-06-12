@@ -14,7 +14,7 @@ class PocketEngineCommand extends BaseCommand
         parent::__construct(
             "pocketengine",
             "PocketEngine command",
-            "/pocketengine info OR /pocketengine switchworld <world_name: World> OR /pocketengine setspawnpoint",
+            "/pocketengine <subcommand>",
             ["pe", "pocket"],
             "pocketengine.use"
         );
